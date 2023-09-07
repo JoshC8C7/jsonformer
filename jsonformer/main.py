@@ -27,6 +27,7 @@ class Jsonformer:
         max_number_tokens: int = 6,
         temperature: float = 1.0,
         max_string_token_length: int = 10,
+        repetition_penalty: float = 1.0
     ):
         self.model = model
         self.tokenizer = tokenizer
@@ -42,6 +43,7 @@ class Jsonformer:
         self.max_number_tokens = max_number_tokens
         self.temperature = temperature
         self.max_string_token_length = max_string_token_length
+        self.repetition_penalty = repetition_penalty
 
     def debug(self, caller: str, value: str, is_prompt: bool = False):
         if self.debug_on:
@@ -118,6 +120,7 @@ class Jsonformer:
                 StringStoppingCriteria(self.tokenizer, len(input_tokens[0]))
             ],
             pad_token_id=self.tokenizer.eos_token_id,
+            repetition_penalty=self.repetition_penalty
         )
 
         # Some models output the prompt as part of the response
