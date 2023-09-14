@@ -24,6 +24,7 @@ class Jsonformer:
         *,
         debug: bool = False,
         max_array_length: int = 10,
+        max_input_length: int = None,
         max_number_tokens: int = 6,
         temperature: float = 1.0,
         max_string_token_length: int = 10,
@@ -44,6 +45,7 @@ class Jsonformer:
         self.temperature = temperature
         self.max_string_token_length = max_string_token_length
         self.repetition_penalty = repetition_penalty
+        self.max_length = max_input_length
 
     def debug(self, caller: str, value: str, is_prompt: bool = False):
         if self.debug_on:
@@ -57,7 +59,7 @@ class Jsonformer:
     def generate_number(self, temperature: Union[float, None] = None, iterations=0):
         prompt = self.get_prompt()
         self.debug("[generate_number]", prompt, is_prompt=True)
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt", max_length=self.max_length).to(
             self.model.device
         )
         response = self.model.generate(
@@ -88,7 +90,7 @@ class Jsonformer:
         prompt = self.get_prompt()
         self.debug("[generate_boolean]", prompt, is_prompt=True)
 
-        input_tensor = self.tokenizer.encode(prompt, return_tensors="pt")
+        input_tensor = self.tokenizer.encode(prompt, max_length=self.max_length, return_tensors="pt")
         output = self.model.forward(input_tensor.to(self.model.device))
         logits = output.logits[0, -1]
 
@@ -107,7 +109,7 @@ class Jsonformer:
     def generate_string(self) -> str:
         prompt = self.get_prompt() + '"'
         self.debug("[generate_string]", prompt, is_prompt=True)
-        input_tokens = self.tokenizer.encode(prompt, return_tensors="pt").to(
+        input_tokens = self.tokenizer.encode(prompt, max_length=self.max_length, return_tensors="pt").to(
             self.model.device
         )
 
@@ -198,7 +200,7 @@ class Jsonformer:
             obj.append(self.generation_marker)
             input_prompt = self.get_prompt()
             obj.pop()
-            input_tensor = self.tokenizer.encode(input_prompt, return_tensors="pt")
+            input_tensor = self.tokenizer.encode(input_prompt, max_length=self.max_length, return_tensors="pt")
             output = self.model.forward(input_tensor.to(self.model.device))
             logits = output.logits[0, -1]
 
