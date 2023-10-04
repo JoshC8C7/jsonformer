@@ -4,7 +4,7 @@ import torch
 
 class StringStoppingCriteria(StoppingCriteria):
     def __init__(self, tokenizer: PreTrainedTokenizer, prompt_length: int):
-        self.tokenizer = tokenizer
+        self.speech_toks = [v for k,v in tokenizer.get_vocab().items() if '"' in k]
         self.prompt_length = prompt_length
 
     def __call__(
@@ -16,9 +16,7 @@ class StringStoppingCriteria(StoppingCriteria):
             return False
 
         last_token_id = input_ids[0][-1]
-        last_token = self.tokenizer.decode(last_token_id, skip_special_tokens=True)
-
-        result = '"' in last_token
+        result = last_token_id in self.speech_toks
 
         return result
 
